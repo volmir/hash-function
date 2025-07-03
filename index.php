@@ -1,5 +1,7 @@
 <?php
 
+$marker_start = microtime(true);
+
 set_time_limit(300);
 ini_set('max_execution_time', 300);
 
@@ -37,5 +39,7 @@ foreach ($hashes as $hash => $words) {
 
 echo 'Count words: ' . count($words_list_unique) . PHP_EOL;
 echo 'Count unique hashes: ' . count($hashes) . PHP_EOL;
+
+echo 'Elapsed time: ' . number_format(microtime(true) - $marker_start, 4) . ' seconds' . PHP_EOL;
 
 
