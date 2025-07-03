@@ -1,7 +1,15 @@
 <?php
 
+/**
+ * Realization of simple cryptographic hash function 
+ * (something like md5())
+ */
 class SimpleHash 
 {
+    /**
+     * Input: string
+     * Output: hash (string 32 symbols lenght [0-9][a-f])
+     */
     public function get(string $str):string
     {
         $str = sprintf("%'1*s", 32, $str);
@@ -14,19 +22,18 @@ class SimpleHash
         for ($i = 0; $i < strlen($str); $i++) {
             $char = ord($str[$i]);
             
+            // Bitwise transformations
             $hash1 = ($hash3 << 7) - $hash1 + $char;
             $hash2 = ($hash1 << 3) - $hash2 + $char;
             $hash3 = ($hash4 << 1) - $hash3 + $char;
             $hash4 = ($hash2 << 5) - $hash4 + $char;
             
             // Convert to 32bit integer
-            $hash1 &= 0xffffffff;
-            $hash2 &= 0xffffffff;
-            $hash3 &= 0xffffffff;
-            $hash4 &= 0xffffffff;
+            $hash1 &= 0xFFFFFFFF;
+            $hash2 &= 0xFFFFFFFF;
+            $hash3 &= 0xFFFFFFFF;
+            $hash4 &= 0xFFFFFFFF;
         }
-
-        //var_dump($hash1, $hash2, $hash3, $hash4);
 
         $hash1 = sprintf("%'1*s", 10, $hash1);
         $hash2 = sprintf("%'1*s", 10, $hash2);
