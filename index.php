@@ -5,11 +5,14 @@ $marker_start = microtime(true);
 set_time_limit(300);
 ini_set('max_execution_time', 300);
 
-include './words.php';
-include './SimpleHash.php';
+include './avalanche_effect.php';
+include './english_words.php';
+include './passwords.php';
+include './ip_address.php';
+include './SimpleCryptoHash.php';
 
 
-$simpleHash = new SimpleHash();
+$simpleHash = new SimpleCryptoHash();
 
 
 
@@ -20,7 +23,9 @@ echo <<<EOH
 EOH;
 $str = 'Random generated string'; 
 $hash = $simpleHash->get($str);
-echo PHP_EOL . $str . ' = ' . $hash . PHP_EOL;
+echo PHP_EOL . '32bit hash: "' . $str . '" = ' . $hash . PHP_EOL;
+$hash = $simpleHash->get128bit($str);
+echo '128bit hash: "' . $str . '" = ' . $hash . PHP_EOL;
 echo PHP_EOL . PHP_EOL;
 
 
@@ -30,36 +35,15 @@ echo <<<EOH
  Test 2
 ---------------------------------
 EOH;
-$str1 = 'a'; 
-$hash1 = $simpleHash->get($str1);
-echo PHP_EOL . $str1 . ' = ' . $hash1 . PHP_EOL;
-
-$str2 = 'b'; 
-$hash2 = $simpleHash->get($str2);
-echo $str2 . ' = ' . $hash2 . PHP_EOL;
-
-$str3 = '111';
-$hash3 = $simpleHash->get($str3);
-echo $str3 . ' = ' . $hash3 . PHP_EOL;
-
-$str4 = '1111';
-$hash4 = $simpleHash->get($str4);
-echo $str4 . ' = ' . $hash4 . PHP_EOL;
-
-$avalanche_effect_1 = 0;
-$avalanche_effect_2 = 0;
-for ($i = 0; $i<=31; $i++) {
-    if ($hash1[$i] == $hash2[$i]) {
-        $avalanche_effect_1++;
-    }
-    if ($hash3[$i] == $hash4[$i]) {
-        $avalanche_effect_2++;
-    }
-}
-echo 'Avalanche effect ("' . $str1 . '" to "' . $str2 . '")  = ' . ($avalanche_effect_1 / 32 * 100) . "%" . PHP_EOL;
-echo 'Avalanche effect ("' . $str3 . '" to "' . $str4 . '")  = ' . ($avalanche_effect_2 / 32 * 100) . "%" . PHP_EOL;
+avalanche_effect($simpleHash, 'a', 'b');
+avalanche_effect($simpleHash, '111', '1111');
+avalanche_effect($simpleHash, '999999999999999', '9999999999999999');
+avalanche_effect($simpleHash, 'а', 'б');
+avalanche_effect($simpleHash, '讲讲', '讲讲讲');
+avalanche_effect($simpleHash, '😁', '😁😁');
+avalanche_effect($simpleHash, '😁😂😃😄😅😆😇😈', '😁😂😃😄😅😆😇😈😉');
+avalanche_effect($simpleHash, "5Zn1Uwkrb8@2G&|6", "a_5ZLJ0)X}9Njt<A");
 echo PHP_EOL . PHP_EOL;
-
 
 
 echo <<<EOH
@@ -82,15 +66,132 @@ foreach ($hashes as $hash => $words) {
         $collision_count += (count($words) - 1);
         var_dump($words);
     }
-    if (strlen($hash) != 32) {
+    if (strlen($hash) != 8) {
         var_dump($hash);
     }
 }
-
-
 echo PHP_EOL . 'Count common used English words: ' . count($words_list_unique) . PHP_EOL;
 echo 'Count unique hashes: ' . count($hashes) . PHP_EOL;
-echo 'Percent of collisions: ' . number_format(($collision_count / count($hashes) * 100), 2) . "%" . PHP_EOL . PHP_EOL;
+echo 'Percent of collisions: ' . number_format(($collision_count / count($hashes) * 100), 3) . "%" . PHP_EOL;
+echo PHP_EOL . PHP_EOL;
+
+
+
+echo <<<EOH
+---------------------------------
+ Test 4
+---------------------------------
+EOH;
+$hashes = [];
+foreach ($ip_address_list as $ip_address) {
+    $hash = $simpleHash->get($ip_address);
+    $hashes[$hash][] = $ip_address; 
+}
+
+/**
+ * Check for hash collisions
+ */
+$collision_count = 0;
+foreach ($hashes as $hash => $ip_addresses) {
+    if (count($ip_addresses) > 1) {
+        $collision_count += (count($ip_addresses) - 1);
+        var_dump($ip_addresses);
+    }
+    if (strlen($hash) != 8) {
+        var_dump($hash);
+    }
+}
+echo PHP_EOL . 'Count IP address: ' . count($ip_address_list) . PHP_EOL;
+echo 'Count unique hashes: ' . count($hashes) . PHP_EOL;
+echo 'Percent of collisions: ' . number_format(($collision_count / count($hashes) * 100), 3) . "%" . PHP_EOL;
+echo PHP_EOL . PHP_EOL;
+
+
+
+echo <<<EOH
+---------------------------------
+ Test 5
+---------------------------------
+EOH;
+$hashes = [];
+foreach ($passwords_list as $password) {
+    $hash = $simpleHash->get($password);
+    $hashes[$hash][] = $password; 
+}
+
+/**
+ * Check for hash collisions
+ */
+$collision_count = 0;
+foreach ($hashes as $hash => $passwords) {
+    if (count($passwords) > 1) {
+        $collision_count += (count($passwords) - 1);
+        var_dump($passwords);
+    }
+    if (strlen($hash) != 8) {
+        var_dump($hash);
+    }
+}
+echo PHP_EOL . 'Count passwords: ' . count($passwords_list) . PHP_EOL;
+echo 'Count unique hashes: ' . count($hashes) . PHP_EOL;
+echo 'Percent of collisions: ' . number_format(($collision_count / count($hashes) * 100), 3) . "%" . PHP_EOL;
+echo PHP_EOL . PHP_EOL;
+
+
+
+echo <<<EOH
+---------------------------------
+ Test 6
+---------------------------------
+EOH;
+$character_distribution = [];
+foreach ($passwords_list as $password) {
+    $hash = $simpleHash->get($password);
+    $hash_arr = str_split($hash);
+    foreach ($hash_arr as $symbol) {
+        if (!array_key_exists($symbol, $character_distribution)) {
+            $character_distribution[$symbol] = 1;
+        } else {
+            $character_distribution[$symbol] += 1;
+        }
+    }
+}
+ksort($character_distribution);
+echo PHP_EOL . 'Character distribution (' . count($passwords_list) . ' hashes): ' . PHP_EOL;
+$character_sum = 0;
+foreach ($character_distribution as $symbol => $items) {
+    $character_sum += $items;
+}
+foreach ($character_distribution as $symbol => $items) {
+    echo $symbol . ': ' . number_format(($items / $character_sum * 100), 2) . "%"  . PHP_EOL;
+}
+echo PHP_EOL . PHP_EOL;
+
+
+
+
+echo <<<EOH
+---------------------------------
+ Test 7
+---------------------------------
+EOH;
+$min_value = 4294967295;
+$max_value = 0;
+foreach ($passwords_list as $password) {
+    $hash = $simpleHash->get($password);
+    $hash = base_convert($hash, 16, 10);
+    if ($hash < $min_value) {
+        $min_value = $hash;
+    }
+    if ($hash > $max_value) {
+        $max_value = $hash;
+    }
+}
+echo PHP_EOL . 'Min/max hash value (' . count($passwords_list) . ' hashes): ' . PHP_EOL;
+echo 'Min: ' . $min_value . ' (decimal) - ' . base_convert($min_value, 10, 16) . ' (hex)' . PHP_EOL;
+echo 'Max: ' . $max_value . ' (decimal) - ' . base_convert($max_value, 10, 16) . ' (hex)' . PHP_EOL;
+echo PHP_EOL . PHP_EOL;
+
 
 echo 'Elapsed time: ' . number_format(microtime(true) - $marker_start, 4) . ' seconds' . PHP_EOL . PHP_EOL;
 

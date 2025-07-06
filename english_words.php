@@ -2922,7 +2922,7 @@ $words_list = explode(PHP_EOL, $words);
 
 $words_list_unique = [];
 foreach ($words_list as $word) {
-    if (!in_array($word, $words_list_unique)) {
+    if (!empty($word) && !in_array($word, $words_list_unique)) {
         $words_list_unique[] = $word;
     }
 }
