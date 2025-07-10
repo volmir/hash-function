@@ -40,7 +40,7 @@ class SimpleCryptoHashTest
 
     public function test3($words_list_unique = [], $function = 'get')
     {
-        $this->echoTestHead(3 . ', ' . $function . '()');
+        $this->echoTestHead(3 . ', SimpleCryptoHash->' . $function . '()');
         $hashes = [];
         foreach ($words_list_unique as $word) {
             $hash = $this->class->$function($word);
@@ -65,7 +65,7 @@ class SimpleCryptoHashTest
 
     public function test4($ip_address_list = [], $function = 'get')
     {
-        $this->echoTestHead(4 . ', ' . $function . '()');
+        $this->echoTestHead(4 . ', SimpleCryptoHash->' . $function . '()');
         $hashes = [];
         foreach ($ip_address_list as $ip_address) {
             $hash = $this->class->$function($ip_address);
@@ -90,7 +90,7 @@ class SimpleCryptoHashTest
 
     public function test5($passwords_list = [], $function = 'get')
     {
-        $this->echoTestHead(5 . ', ' . $function . '()');
+        $this->echoTestHead(5 . ', SimpleCryptoHash->' . $function . '()');
         $hashes = [];
         foreach ($passwords_list as $password) {
             $hash = $this->class->$function($password);

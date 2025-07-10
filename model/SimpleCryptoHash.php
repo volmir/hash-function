@@ -34,7 +34,7 @@ class SimpleCryptoHash
         }
 
         if ($hash < self::MIN_8_SYMBOL_HEX) {
-            $hash = sprintf("%'" . $this->getDigit($hash) . "*s", 10, $hash);
+            $hash = sprintf("%'" . (($hash % 3) + 1) . "*s", 10, $hash);
         }
         $hash = base_convert($hash, 10, 16);
           
@@ -81,16 +81,16 @@ class SimpleCryptoHash
         }
 
         if ($hash1 < self::MIN_8_SYMBOL_HEX) {
-            $hash1 = sprintf("%'" . $this->getDigit($hash1) . "*s", 10, $hash1);
+            $hash1 = sprintf("%'" . (($hash1 % 3) + 1) . "*s", 10, $hash1);
         }
         if ($hash2 < self::MIN_8_SYMBOL_HEX) {
-            $hash2 = sprintf("%'" . $this->getDigit($hash2) . "*s", 10, $hash2);
+            $hash2 = sprintf("%'" . (($hash2 % 3) + 1) . "*s", 10, $hash2);
         }
         if ($hash3 < self::MIN_8_SYMBOL_HEX) {
-            $hash3 = sprintf("%'" . $this->getDigit($hash3) . "*s", 10, $hash3);
+            $hash3 = sprintf("%'" . (($hash3 % 3) + 1) . "*s", 10, $hash3);
         }
         if ($hash4 < self::MIN_8_SYMBOL_HEX) {
-            $hash4 = sprintf("%'" . $this->getDigit($hash4) . "*s", 10, $hash4);
+            $hash4 = sprintf("%'" . (($hash4 % 3) + 1) . "*s", 10, $hash4);
         }
 
         $hash = base_convert($hash1, 10, 16)
@@ -122,21 +122,10 @@ class SimpleCryptoHash
         }
 
         if ($hash < self::MIN_8_SYMBOL_HEX) {
-            $hash = sprintf("%'" . $this->getDigit($hash) . "*s", 10, $hash);
+            $hash = sprintf("%'" . (($hash % 3) + 1) . "*s", 10, $hash);
         }
         $hash = base_convert($hash, 10, 16);
           
         return $hash;
-    }
-
-    protected function getDigit(int $hash): int
-    {
-        $digit = 1;
-        if ($hash % 3 == 0) {
-            $digit = 3;
-        } elseif ($hash % 2 == 0) {
-            $digit = 2;
-        }
-        return $digit;
     }
 }
