@@ -72,7 +72,7 @@ foreach ($hashes as $hash => $words) {
 }
 echo PHP_EOL . 'Count common used English words: ' . count($words_list_unique) . PHP_EOL;
 echo 'Count unique hashes: ' . count($hashes) . PHP_EOL;
-echo 'Percent of collisions: ' . number_format(($collision_count / count($hashes) * 100), 3) . "%" . PHP_EOL;
+echo 'Percent of collisions: ' . number_format(($collision_count / count($words_list_unique) * 100), 3) . "%" . PHP_EOL;
 echo PHP_EOL . PHP_EOL;
 
 
@@ -103,7 +103,7 @@ foreach ($hashes as $hash => $ip_addresses) {
 }
 echo PHP_EOL . 'Count IP address: ' . count($ip_address_list) . PHP_EOL;
 echo 'Count unique hashes: ' . count($hashes) . PHP_EOL;
-echo 'Percent of collisions: ' . number_format(($collision_count / count($hashes) * 100), 3) . "%" . PHP_EOL;
+echo 'Percent of collisions: ' . number_format(($collision_count / count($ip_address_list) * 100), 3) . "%" . PHP_EOL;
 echo PHP_EOL . PHP_EOL;
 
 
@@ -134,7 +134,7 @@ foreach ($hashes as $hash => $passwords) {
 }
 echo PHP_EOL . 'Count passwords: ' . count($passwords_list) . PHP_EOL;
 echo 'Count unique hashes: ' . count($hashes) . PHP_EOL;
-echo 'Percent of collisions: ' . number_format(($collision_count / count($hashes) * 100), 3) . "%" . PHP_EOL;
+echo 'Percent of collisions: ' . number_format(($collision_count / count($passwords_list) * 100), 3) . "%" . PHP_EOL;
 echo PHP_EOL . PHP_EOL;
 
 
@@ -191,6 +191,46 @@ echo PHP_EOL . 'Min/max hash value (' . count($passwords_list) . ' hashes): ' . 
 echo 'Min: ' . $min_value . ' (decimal) - ' . base_convert($min_value, 10, 16) . ' (hex)' . PHP_EOL;
 echo 'Max: ' . $max_value . ' (decimal) - ' . base_convert($max_value, 10, 16) . ' (hex)' . PHP_EOL;
 echo PHP_EOL . PHP_EOL;
+
+
+
+echo <<<EOH
+---------------------------------
+ Test 8
+---------------------------------
+EOH;
+$min_value = 268435456;
+$max_value = 4294967295;
+$steps = 10;
+$step_value = round(($max_value - $min_value) / $steps);
+
+$qauntity_distribution = [];
+for ($i = 0; $i < $steps; $i++) {
+    $qauntity_distribution[($min_value + ($i * $step_value))] = 0;
+}
+foreach ($passwords_list as $password) {
+    $hash = $simpleHash->get($password);
+    $hash_decim = base_convert($hash, 16, 10);
+    foreach ($qauntity_distribution as $key => $value) {
+        $next_key = $key + $step_value;
+        if ($hash_decim > $key && $hash_decim < $next_key) {
+            $qauntity_distribution[$key] += 1;
+            continue;
+        }        
+    }
+}
+
+echo PHP_EOL . 'Qauntity distribution (' . $steps . ' parts): ' . PHP_EOL;
+$qauntity_sum = 0;
+foreach ($qauntity_distribution as $key => $items) {
+    $qauntity_sum += $items;
+}
+foreach ($qauntity_distribution as $key => $items) {
+    echo ' > ' . $key . ': ' . number_format(($items / $qauntity_sum * 100), 2) . "%"  . PHP_EOL;
+}
+echo PHP_EOL . PHP_EOL;
+
+
 
 
 echo 'Elapsed time: ' . number_format(microtime(true) - $marker_start, 4) . ' seconds' . PHP_EOL . PHP_EOL;
