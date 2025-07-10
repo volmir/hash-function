@@ -1,7 +1,5 @@
 <?php
 
-$ip_address_list = getIpAddesses();
-
 function getIpAddesses() {
     $ip_address_list = [];
 

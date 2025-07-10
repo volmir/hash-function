@@ -1,6 +1,7 @@
 <?php
 
-$words = "able
+function getCommonEnglishWords() {
+    $words = "able
 about
 above
 account
@@ -2917,14 +2918,14 @@ yourself
 youth
 zone";
 
+    $words_list = explode(PHP_EOL, $words);
 
-$words_list = explode(PHP_EOL, $words);
-
-$words_list_unique = [];
-foreach ($words_list as $word) {
-    if (!empty($word) && !in_array($word, $words_list_unique)) {
-        $words_list_unique[] = $word;
+    $words_list_unique = [];
+    foreach ($words_list as $word) {
+        if (!empty($word) && !in_array($word, $words_list_unique)) {
+            $words_list_unique[] = $word;
+        }
     }
+
+    return $words_list_unique;
 }
-
-

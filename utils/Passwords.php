@@ -1,7 +1,5 @@
 <?php
 
-$passwords_list = getPasswords();
-
 function getPasswords() {
     $passwords_list = [];
 

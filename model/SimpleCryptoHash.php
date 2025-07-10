@@ -1,5 +1,7 @@
 <?php
 
+namespace model;
+
 /**
  * Realization of simple cryptographic hash function 
  * (something like md5())
