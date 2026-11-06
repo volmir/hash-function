@@ -1,7 +1,13 @@
 <?php
 
-function getCommonEnglishWords() {
-    $words = "able
+namespace SimpleHash\Data;
+
+class EnglishWords
+{
+    // Возвращает уникальные слова для проверки хеша на словаре.
+    public static function get(): array
+    {
+        $words = "able
 about
 above
 account
@@ -2918,14 +2924,17 @@ yourself
 youth
 zone";
 
-    $words_list = explode(PHP_EOL, $words);
+        $words_list = explode(PHP_EOL, $words);
 
-    $words_list_unique = [];
-    foreach ($words_list as $word) {
-        if (!empty($word) && !in_array($word, $words_list_unique)) {
-            $words_list_unique[] = $word;
+        $words_list_unique = [];
+        $seen = [];
+        foreach ($words_list as $word) {
+            if (!empty($word) && !isset($seen[$word])) {
+                $seen[$word] = true;
+                $words_list_unique[] = $word;
+            }
         }
-    }
 
-    return $words_list_unique;
+        return $words_list_unique;
+    }
 }
