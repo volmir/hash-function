@@ -48,7 +48,7 @@ src/SimpleCryptoHash.php    # алгоритм и неизменённый ан�
 src/Data/EnglishWords.php   # словарь уникальных слов
 src/Data/IpAddress.php      # демонстрационные IPv4-адреса
 src/Data/Passwords.php      # демонстрационные строки, похожие на пароли
-tests/Runner.php           # CLI, уровни 1–6, сравнительная таблица
+tests/Runner.php           # CLI, уровни 1–6, текстовые таблицы результатов
 tests/Metrics.php          # общие измерения лавины, коллизий и распределения
 tests/DataSets.php         # воспроизводимые уникальные входы для измерений
 tests/vectors.php          # 15 входов, 30 буквальных ожидаемых хешей

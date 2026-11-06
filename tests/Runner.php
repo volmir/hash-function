@@ -155,7 +155,10 @@ class Runner
             }
             $algorithms[$algorithm] = static fn (string $input): string => substr(hash($algorithm, $input), 0, 8);
         }
-        $rows = [];
+        $avalancheRows = [];
+        $collisionRows = [];
+        $distributionRows = [];
+        $summaryRows = [];
         $weak = [];
         $ownPass = false;
         foreach ($algorithms as $name => $function) {
@@ -170,35 +173,52 @@ class Runner
             if ($name === 'SimpleCryptoHash32') {
                 $ownPass = $pass;
             }
-            $cells = [$name];
-            foreach (['any', 'last'] as $scenario) {
+            foreach (['any' => 'Любой байт', 'last' => 'Последний байт'] as $scenario => $label) {
                 $a = $avalanche[$scenario];
-                $cells[] = sprintf('%.2f%% [%.4f…%.4f]', 100 * $a['mean'], $a['min'], $a['max']);
+                $avalancheRows[] = [$name, $label, sprintf('%.2f%%', 100 * $a['mean']),
+                    sprintf('%.4f', $a['min']), sprintf('%.4f', $a['max']), $a['pass'] ? 'НОРМА' : 'ПЛОХО'];
             }
             foreach ($collisions['sets'] as $c) {
-                $cells[] = sprintf('%d/%.5g%s', $c['collisions'], $c['expected'], $c['pass'] ? '' : ' !');
+                $collisionRows[] = [$name, $c['name'], (string) $c['count'], (string) $c['collisions'],
+                    sprintf('%.5g', $c['expected']), sprintf('%.2f', $c['limit']), $c['pass'] ? 'НОРМА' : 'ПЛОХО'];
             }
-            $cells[] = sprintf('%.2f/%.2f/%.2f/%.2f/%.2f', $distribution['hexChi'], $distribution['positionChi'],
-                $distribution['bitChi'], $distribution['worstBitChi'], $distribution['binChi']);
-            $cells[] = $pass ? 'НОРМА' : 'ПЛОХО';
-            $rows[] = $cells;
+            $distributionRows[] = [$name, sprintf('%.2f', $distribution['hexChi']),
+                sprintf('%.2f', $distribution['positionChi']), sprintf('%.2f', $distribution['bitChi']),
+                sprintf('%.2f', $distribution['worstBitChi']), sprintf('%.2f', $distribution['binChi']),
+                $distribution['pass'] ? 'НОРМА' : 'ПЛОХО'];
+            $summaryRows[] = [$name, $avalanche['pass'] ? 'НОРМА' : 'ПЛОХО',
+                $collisions['pass'] ? 'НОРМА' : 'ПЛОХО', $distribution['pass'] ? 'НОРМА' : 'ПЛОХО',
+                $pass ? 'НОРМА' : 'ПЛОХО'];
         }
         echo 'Результат: общие измерения уровней 3–5, ' . Metrics::AVALANCHE_SAMPLES
             . ' переворотов на сценарий, ' . Metrics::DISTRIBUTION_SAMPLES . ' входов распределения.' . PHP_EOL;
-        echo '| Алгоритм | Лавина: любой байт, среднее [min…max] | Последний байт | C/E: случайные | C/E: числа | C/E: повторы | C/E: перестановки | C/E: \0 | χ² hex/позиция/Σбит/максбит/бин | Оценка |' . PHP_EOL;
-        echo '|---|---|---|---|---|---|---|---|---|---|' . PHP_EOL;
-        foreach ($rows as $cells) {
-            echo '| ' . implode(' | ', $cells) . ' |' . PHP_EOL;
-        }
-        echo 'C/E: коллизии / ожидание; ! — больше 2E+5. Норма лавины: среднее и все биты 0,45…0,55.' . PHP_EOL;
-        printf("Пороги χ² по колонкам: %.2f/%.2f/%.2f/%.2f/%.2f.\n",
-            Metrics::chiLimit(15), Metrics::chiLimit(15), Metrics::chiLimit(32), Metrics::chiLimit(1), Metrics::chiLimit(255));
+        echo PHP_EOL . 'Лавина: среднее и min/max вероятности изменения выходных битов.' . PHP_EOL;
+        $this->printTable(['Алгоритм', 'Изменённый байт', 'Среднее', 'Min P', 'Max P', 'Оценка'],
+            $avalancheRows, [2, 3, 4]);
+        echo 'Норма: среднее 45…55%, все вероятности 0,45…0,55.' . PHP_EOL;
+
+        echo PHP_EOL . 'Коллизии на уникальных входах: наблюдение рядом с ожиданием.' . PHP_EOL;
+        $this->printTable(['Алгоритм', 'Набор', 'Входов', 'Коллизии', 'Ожидание', 'Порог', 'Оценка'],
+            $collisionRows, [2, 3, 4, 5]);
+        echo 'Ожидание E = n²/(2·2^32); порог = 2E+5. Малое ожидание ничего не доказывает.' . PHP_EOL;
+
+        echo PHP_EOL . 'Распределение: χ² и учебные пороги в строке «Порог».' . PHP_EOL;
+        array_unshift($distributionRows, ['Порог', sprintf('%.2f', Metrics::chiLimit(15)),
+            sprintf('%.2f', Metrics::chiLimit(15)), sprintf('%.2f', Metrics::chiLimit(32)),
+            sprintf('%.2f', Metrics::chiLimit(1)), sprintf('%.2f', Metrics::chiLimit(255)), '']);
+        $this->printTable(['Алгоритм', 'Hex', 'Макс. поз.', 'Σ битов', 'Макс. бит', 'Бины', 'Оценка'],
+            $distributionRows, [1, 2, 3, 4, 5]);
+        echo 'Макс. поз. — худшая hex-позиция; макс. бит — худший выходной бит.' . PHP_EOL;
+
+        echo PHP_EOL . 'Общая оценка по выбранным ориентирам.' . PHP_EOL;
+        $this->printTable(['Алгоритм', 'Лавина', 'Коллизии', 'Распределение', 'Итог'], $summaryRows);
         echo 'Вывод: SimpleCryptoHash 32 бит ' . ($ownPass ? 'прошёл выбранные ориентиры.' : 'не прошёл выбранные ориентиры.')
             . ' Слабости по выбранным критериям: ' . ($weak === [] ? 'не обнаружены' : implode(', ', $weak))
             . '. Криптостойкость из этих результатов не следует.' . PHP_EOL;
         return $ownPass;
     }
 
+    // Показываем частоты и критерии отдельно, чтобы числа легко сравнивались по столбцам.
     private function distribution(): bool
     {
         $pass = true;
@@ -206,28 +226,83 @@ class Runner
             . ' 256 бинов покрывают 0x00000000…0xFFFFFFFF каждой 32-битной части.' . PHP_EOL;
         foreach ($this->ourHashes() as $name => $algorithm) {
             $row = $this->measure($name, 'distribution', $algorithm['hash'], $algorithm['bits']);
-            echo $name . PHP_EOL . 'Hex-цифры (идеал 6,25%): ';
-            foreach ($row['digits'] as $digit => $count) {
-                printf('%x=%.3f%% ', $digit, 100 * $count / array_sum($row['digits']));
-            }
-            echo PHP_EOL . 'P(1) по позициям: байты слева направо, внутри байта от младшего бита к старшему.' . PHP_EOL;
-            foreach (array_chunk($row['probabilities'], 16, true) as $chunk) {
-                foreach ($chunk as $bit => $probability) {
-                    printf('%d=%.4f ', $bit, $probability);
+            echo PHP_EOL . $name . PHP_EOL . 'Hex-цифры (идеал 6,25%):' . PHP_EOL;
+            $digitRows = [];
+            $total = array_sum($row['digits']);
+            for ($offset = 0; $offset < 4; $offset++) {
+                $cells = [];
+                for ($digit = $offset; $digit < 16; $digit += 4) {
+                    $cells[] = sprintf('%x', $digit);
+                    $cells[] = sprintf('%.3f%%', 100 * $row['digits'][$digit] / $total);
                 }
-                echo PHP_EOL;
+                $digitRows[] = $cells;
             }
-            printf("χ² hex(df=15)=%.2f / %.2f; худшая hex-позиция=%.2f / %.2f\n",
-                $row['hexChi'], Metrics::chiLimit(15), $row['positionChi'], Metrics::chiLimit(15));
-            printf("χ² биты Σ(df=%d)=%.2f / %.2f; худший бит(df=1)=%.2f / %.2f\n",
-                $algorithm['bits'], $row['bitChi'], Metrics::chiLimit($algorithm['bits']), $row['worstBitChi'], Metrics::chiLimit(1));
-            printf("χ² бины(df=255)=%.2f / %.2f; худшая 32-битная часть=%.2f / %.2f\n",
-                $row['binChi'], Metrics::chiLimit(255), $row['laneChi'], Metrics::chiLimit(255));
+            $this->printTable(['Hex', 'Частота', 'Hex', 'Частота', 'Hex', 'Частота', 'Hex', 'Частота'],
+                $digitRows, [1, 3, 5, 7]);
+
+            echo 'P(1) по битам (идеал 0,50): строка — байт, столбец — смещение бита.' . PHP_EOL;
+            echo 'Байты слева направо, внутри байта от младшего бита к старшему; нумерация с нуля.' . PHP_EOL;
+            $bitRows = [];
+            foreach (array_chunk($row['probabilities'], 8) as $byte => $chunk) {
+                $cells = [($byte * 8) . '…' . ($byte * 8 + 7)];
+                foreach ($chunk as $probability) {
+                    $cells[] = sprintf('%.4f', $probability);
+                }
+                $bitRows[] = $cells;
+            }
+            $this->printTable(['Биты', '+0', '+1', '+2', '+3', '+4', '+5', '+6', '+7'],
+                $bitRows, [1, 2, 3, 4, 5, 6, 7, 8]);
+
+            echo 'Критерии равномерности (df — степени свободы):' . PHP_EOL;
+            $criteria = [
+                ['Hex-цифры', 'hexChi', 15],
+                ['Худшая hex-позиция', 'positionChi', 15],
+                ['Сумма по битам', 'bitChi', $algorithm['bits']],
+                ['Худший бит', 'worstBitChi', 1],
+                ['Бины (общая гистограмма)', 'binChi', 255],
+                ['Худшая 32-битная часть', 'laneChi', 255],
+            ];
+            $criteriaRows = [];
+            foreach ($criteria as [$label, $key, $degrees]) {
+                $limit = Metrics::chiLimit($degrees);
+                $criteriaRows[] = [$label, (string) $degrees, sprintf('%.2f', $row[$key]),
+                    sprintf('%.2f', $limit), $row[$key] <= $limit ? 'НОРМА' : 'ПЛОХО'];
+            }
+            $this->printTable(['Проверка', 'df', 'χ²', 'Порог', 'Оценка'], $criteriaRows, [1, 2, 3]);
             echo 'Интерпретация: ' . ($row['pass'] ? 'НОРМА — явной неравномерности на этом наборе не обнаружено.'
                 : 'ПЛОХО — хотя бы одна статистика превысила учебный порог.') . PHP_EOL;
             $pass = $pass && $row['pass'];
         }
         return $pass;
+    }
+
+    // Выравниваем текст по символам UTF-8, чтобы кириллица не сдвигала рамки в терминале.
+    private function printTable(array $headers, array $rows, array $rightAligned = []): void
+    {
+        $widths = array_fill(0, count($headers), 0);
+        foreach ([$headers, ...$rows] as $cells) {
+            foreach ($cells as $column => $cell) {
+                $widths[$column] = max($widths[$column], preg_match_all('/./u', $cell));
+            }
+        }
+        $border = '+';
+        foreach ($widths as $width) {
+            $border .= str_repeat('-', $width + 2) . '+';
+        }
+        echo $border . PHP_EOL;
+        foreach ([$headers, ...$rows] as $index => $cells) {
+            $line = '|';
+            foreach ($cells as $column => $cell) {
+                $padding = str_repeat(' ', $widths[$column] - preg_match_all('/./u', $cell));
+                $right = $index > 0 && in_array($column, $rightAligned, true);
+                $line .= ' ' . ($right ? $padding . $cell : $cell . $padding) . ' |';
+            }
+            echo $line . PHP_EOL;
+            if ($index === 0) {
+                echo $border . PHP_EOL;
+            }
+        }
+        echo $border . PHP_EOL;
     }
 
     private function collisions(): bool
