@@ -13,6 +13,20 @@
 Нужны Docker и Docker Compose. Из каталога проекта выполните:
 
 ```sh
+# Хеш строки по умолчанию — 128 бит
+docker compose run --rm app php hash.php "Example text"
+
+# Явно выбрать 32 бита
+docker compose run --rm app php hash.php "Example text" 32
+
+# Пробелы и кавычки внутри строки, пустая строка и UTF-8
+docker compose run --rm app php hash.php 'строка с "кавычками"'
+docker compose run --rm app php hash.php ""
+docker compose run --rm app php hash.php "Привет" 128
+
+# Проверка интерфейса хеширования
+docker compose run --rm app php tests/check-cli.php
+
 # Все уровни по порядку, seed по умолчанию равен 1
 docker compose run --rm app php run.php
 
@@ -28,6 +42,11 @@ docker compose run --rm app php run.php --level=6 --seed=1
 # Проверка самих измерителей на синтетических данных
 docker compose run --rm app php tests/check-metrics.php
 ```
+
+Команда `hash.php` выводит в stdout только хеш и перевод строки. При ошибке
+аргументов подсказка выводится в stderr, код возврата — `2`. Нулевой байт
+нельзя передать через аргумент процесса; остальные байты строки обрабатываются как есть.
+Проверка CLI пропускает векторы с нулевыми байтами по той же причине.
 
 Контейнер использует 64-битный PHP 8.3 CLI (`php:8.3-cli`). При первом запуске
 Compose собирает образ и подключает каталог проекта в `/app`. PHP на хосте,
@@ -55,6 +74,7 @@ Seed печатается в выводе. Все случайные данны�
 ├── .dockerignore               # Исключения контекста сборки
 ├── autoload.php                # Автозагрузка в стиле PSR-4 без Composer
 ├── run.php                     # Единая точка запуска тестов
+├── hash.php                    # CLI для вычисления хеша строки
 ├── src/
 │   ├── SimpleHash.php    # Алгоритм
 │   └── Data/
@@ -66,7 +86,8 @@ Seed печатается в выводе. Все случайные данны�
 │   ├── Metrics.php             # Общие измерения лавины, коллизий и распределения
 │   ├── DataSets.php            # Воспроизводимые случайные и структурные входы
 │   ├── vectors.php             # 15 фиксированных входов с хешами 32/128 бит
-│   └── check-metrics.php       # Проверки корректности самих измерителей
+│   ├── check-metrics.php       # Проверки корректности самих измерителей
+│   └── check-cli.php           # Проверки интерфейса hash.php
 ├── README.md
 ├── AGENTS.md                   # Правила работы с проектом
 └── LICENSE

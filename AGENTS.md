@@ -53,8 +53,10 @@ tests/Metrics.php          # общие измерения лавины, кол�
 tests/DataSets.php         # воспроизводимые уникальные входы для измерений
 tests/vectors.php          # 15 входов, 30 буквальных ожидаемых хешей
 tests/check-metrics.php    # отдельные проверки самих измерителей
+tests/check-cli.php        # проверки интерфейса hash.php
 autoload.php               # Hash\ → src/, Tests\ → tests/, без Composer
 run.php                    # точка входа: Tests\Runner
+hash.php                   # CLI для вычисления хеша строки
 Dockerfile, docker-compose.yml, .dockerignore
 README.md                  # запуск, формулы, тесты, ограничения
 docs/security-review.md    # результаты практической проверки криптостойкости
@@ -65,6 +67,8 @@ docs/security-review.md    # результаты практической пр�
 Запуск **только через Docker** (PHP на хосте может отсутствовать или быть другой версии):
 
 ```
+docker compose run --rm app php hash.php "строка"           # хеш 128 бит (или добавить 32)
+docker compose run --rm app php tests/check-cli.php         # проверки интерфейса hash.php
 docker compose run --rm app php run.php                     # все уровни, seed=1
 docker compose run --rm app php run.php --level=3 --seed=1  # один уровень
 docker compose run --rm app php tests/check-metrics.php     # проверки измерителей
