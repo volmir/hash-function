@@ -119,10 +119,13 @@ run_gate() { # $1=gate-command
 }
 
 summary_line() { # из файла последнего сообщения агента
+  # Считаем символы UTF-8 даже при запуске оркестратора с LC_ALL=C.
+  local LC_ALL=C.UTF-8
   local f="$1" s=""
   [ -f "$f" ] && s=$(grep -m1 '^ИТОГ:' "$f" || true)
   [ -z "$s" ] && [ -f "$f" ] && s=$(grep -m1 -v '^[[:space:]]*$' "$f" || true)
-  printf '%s' "${s:-(агент не оставил итога)}" | cut -c1-300
+  s="${s:-(агент не оставил итога)}"
+  printf '%s' "${s:0:300}"
 }
 
 PUSH_PENDING=0

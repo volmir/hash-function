@@ -19,6 +19,8 @@ class Runner
 
     private int $seed = 1;
     private array $measurements = [];
+    private array $levelResults = [];
+    private array $levelErrors = [];
     private const READINGS = [
         1 => 'Формат и эталоны должны совпасть, включая ведущие нули; это проверка работоспособности.',
         2 => 'Все сравнения должны совпасть; повтор, новый экземпляр и порядок не должны влиять на результат.',
@@ -41,6 +43,8 @@ class Runner
 
         $this->seed = $options['seed'];
         $this->measurements = [];
+        $this->levelResults = [];
+        $this->levelErrors = [];
         echo 'Seed: ' . $this->seed . PHP_EOL;
         $levels = $options['level'] === null ? array_keys(self::LEVELS) : [$options['level']];
         $passed = 0;
@@ -63,12 +67,14 @@ class Runner
                     6 => $this->comparison(),
                 };
             } catch (Throwable $error) {
+                $this->levelErrors[$level] = $error->getMessage();
                 fwrite(STDERR, 'Ошибка уровня ' . $level . ': ' . $error->getMessage() . PHP_EOL);
                 echo 'Результат: ПРОВАЛ — проверка завершилась исключением.' . PHP_EOL;
                 $success = false;
             }
 
             echo 'Как читать: ' . self::READINGS[$level] . PHP_EOL;
+            $this->levelResults[$level] = $success;
             if ($success) {
                 $passed++;
             } else {
@@ -83,6 +89,17 @@ class Runner
         }
 
         return 0;
+    }
+
+    // Даём оркестратору результаты без разбора текста и без изменения критериев.
+    public function getReport(): array
+    {
+        return [
+            'seed' => $this->seed,
+            'levels' => $this->levelResults,
+            'errors' => $this->levelErrors,
+            'measurements' => $this->measurements,
+        ];
     }
 
     // Строгая проверка аргументов не даёт незаметно запустить другой уровень из-за опечатки.
