@@ -3,7 +3,7 @@
 namespace Tests;
 
 use InvalidArgumentException;
-use SimpleHash\SimpleCryptoHash;
+use Hash\SimpleCryptoHash;
 use Throwable;
 
 class Runner

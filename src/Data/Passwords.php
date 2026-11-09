@@ -1,6 +1,6 @@
 <?php
 
-namespace SimpleHash\Data;
+namespace Hash\Data;
 
 class Passwords
 {

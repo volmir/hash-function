@@ -1,6 +1,6 @@
 <?php
 
-namespace SimpleHash;
+namespace Hash;
 
 // Учебный хеш по байтам; криптостойкость не предполагается.
 class SimpleCryptoHash

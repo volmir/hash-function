@@ -72,9 +72,9 @@ Seed печатается в выводе. Все случайные данны�
 └── LICENSE
 ```
 
-Автозагрузка сопоставляет пространство имён `SimpleHash\` с `src/`,
+Автозагрузка сопоставляет пространство имён `Hash\` с `src/`,
 а `Tests\` — с `tests/`. Утилиты данных оформлены классами без глобальных
-функций: `SimpleHash\Data\EnglishWords`, `IpAddress`, `Passwords`; у каждого
+функций: `Hash\Data\EnglishWords`, `IpAddress`, `Passwords`; у каждого
 есть статический метод `get()`.
 
 ## Пример использования
@@ -82,7 +82,7 @@ Seed печатается в выводе. Все случайные данны�
 ```php
 require __DIR__ . '/autoload.php';
 
-use SimpleHash\SimpleCryptoHash;
+use Hash\SimpleCryptoHash;
 
 $str = 'Example text';
 $simpleCryptoHash = new SimpleCryptoHash();

@@ -3,7 +3,7 @@
 // Сопоставляем пространства имён каталогам без Composer и ручных подключений классов.
 spl_autoload_register(static function (string $class): void {
     $prefixes = [
-        'SimpleHash\\' => __DIR__ . '/src/',
+        'Hash\\' => __DIR__ . '/src/',
         'Tests\\' => __DIR__ . '/tests/',
     ];
 

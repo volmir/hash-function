@@ -85,7 +85,7 @@ Example text: a76e8df2bfabc0aa6d319fbb55403207
 ```sh
 docker compose run --rm app php -r '
 require "autoload.php";
-$h = new SimpleHash\SimpleCryptoHash();
+$h = new Hash\SimpleCryptoHash();
 $a = "Example text";
 $b = hex2bin("666f726765643aebcc043fd8");
 echo $h->get32bit($a), PHP_EOL, $h->get32bit($b), PHP_EOL;
