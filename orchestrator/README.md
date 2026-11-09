@@ -27,12 +27,12 @@ orchestrator/PROGRESS.md   журнал итогов = «память» (соз�
 2. Скопируйте каталог `orchestrator/` в корень проекта. В корне проекта должны быть `AGENTS.md` и `docker-compose.yml` (сервис `app`).
 3. Убедитесь, что репозиторий чистый и есть remote `origin` с рабочей авторизацией (SSH-ключ или credential helper) **в той оболочке, из которой запускаете скрипт**.
 4. Проверьте флаги вашей версии Codex: `codex exec --help`. Скрипт использует `-m`, `-c`, `--sandbox`, `-o`, подкоманду `resume`. В новых версиях `--full-auto` объявлен устаревшим, а `--ask-for-approval` у `exec` удалён; в скрипте их нет.
-5. Узнайте id доступных моделей (в интерактивном `codex` команда `/model`) и задайте три уровня:
+5. Задайте три уровня моделей. Ниже — значения, использованные в консольных запусках проекта:
 
 ```bash
-export MODEL_LIGHT="<лёгкая быстрая модель>"      # P1–P4
-export MODEL_STANDARD="<основная модель для кода>" # P5, P7–P10, P12–P15
-export MODEL_HEAVY="<самая сильная модель>"        # P6, P11
+export MODEL_LIGHT="gpt-5.6-luna"     # P1–P4
+export MODEL_STANDARD="gpt-6.1-terra" # P5, P7–P10, P12–P15
+export MODEL_HEAVY="gpt-6-astra"      # P6, P11
 # усилие рассуждения (по умолчанию low / medium / high):
 export EFFORT_LIGHT=low EFFORT_STANDARD=medium EFFORT_HEAVY=high
 ```
