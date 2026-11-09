@@ -3,7 +3,7 @@
 namespace Tests;
 
 use InvalidArgumentException;
-use Hash\SimpleCryptoHash;
+use Hash\SimpleHash;
 use Throwable;
 
 class Runner
@@ -25,7 +25,7 @@ class Runner
         3 => 'Идеал: среднее 50%, каждый бит 0,50. Норма: среднее и все биты 0,45…0,55; иначе ПЛОХО. Последний символ здесь означает последний байт.',
         4 => 'Считаем повторные выходы на уникальных входах; ожидание n²/(2·2^bits). Норма: не больше 2·ожидание + 5. Малое ожидание ничего не доказывает.',
         5 => 'Меньше χ² — ближе к равномерности. Порог df + 6√(2df) + 18 — учебный ориентир, не точный p-value; превышение означает ПЛОХО.',
-        6 => 'Все строки измерены на одинаковых данных. Слабые эталоны и антипример — наблюдения; код провала определяется результатами SimpleCryptoHash 32 бит.',
+        6 => 'Все строки измерены на одинаковых данных. Слабые эталоны и антипример — наблюдения; код провала определяется результатами SimpleHash 32 бит.',
     ];
 
     // Разбираем опции и запускаем уровни по порядку, сохраняя итоговый код возврата.
@@ -132,19 +132,19 @@ class Runner
     // Оба варианта используют тот же код измерений; отличаются только вызов и ширина выхода.
     private function ourHashes(): array
     {
-        $hash = new SimpleCryptoHash();
+        $hash = new SimpleHash();
         return [
-            'SimpleCryptoHash32' => ['hash' => [$hash, 'get32bit'], 'bits' => 32],
-            'SimpleCryptoHash128' => ['hash' => [$hash, 'get128bit'], 'bits' => 128],
+            'SimpleHash32' => ['hash' => [$hash, 'get32bit'], 'bits' => 32],
+            'SimpleHash128' => ['hash' => [$hash, 'get128bit'], 'bits' => 128],
         ];
     }
 
     // Эталонные hash() существуют только здесь; остальные уровни не зависят от их наличия.
     private function comparison(): bool
     {
-        $hash = new SimpleCryptoHash();
+        $hash = new SimpleHash();
         $algorithms = [
-            'SimpleCryptoHash32' => [$hash, 'get32bit'],
+            'SimpleHash32' => [$hash, 'get32bit'],
             'getStringSum' => [$hash, 'getStringSum'],
         ];
         $available = array_fill_keys(hash_algos(), true);
@@ -170,7 +170,7 @@ class Runner
             if (!$pass) {
                 $weak[] = $name;
             }
-            if ($name === 'SimpleCryptoHash32') {
+            if ($name === 'SimpleHash32') {
                 $ownPass = $pass;
             }
             foreach (['any' => 'Любой байт', 'last' => 'Последний байт'] as $scenario => $label) {
@@ -212,7 +212,7 @@ class Runner
 
         echo PHP_EOL . 'Общая оценка по выбранным ориентирам.' . PHP_EOL;
         $this->printTable(['Алгоритм', 'Лавина', 'Коллизии', 'Распределение', 'Итог'], $summaryRows);
-        echo 'Вывод: SimpleCryptoHash 32 бит ' . ($ownPass ? 'прошёл выбранные ориентиры.' : 'не прошёл выбранные ориентиры.')
+        echo 'Вывод: SimpleHash 32 бит ' . ($ownPass ? 'прошёл выбранные ориентиры.' : 'не прошёл выбранные ориентиры.')
             . ' Слабости по выбранным критериям: ' . ($weak === [] ? 'не обнаружены' : implode(', ', $weak))
             . '. Криптостойкость из этих результатов не следует.' . PHP_EOL;
         return $ownPass;
@@ -326,7 +326,7 @@ class Runner
     {
         $pass = true;
         echo 'Результат: ' . Metrics::AVALANCHE_SAMPLES . ' выборок на сценарий, раундов финализатора '
-            . SimpleCryptoHash::AVALANCHE_ROUNDS . '.' . PHP_EOL;
+            . SimpleHash::AVALANCHE_ROUNDS . '.' . PHP_EOL;
         foreach ($this->ourHashes() as $name => $algorithm) {
             $result = $this->measure($name, 'avalanche', $algorithm['hash'], $algorithm['bits']);
             foreach (['any' => 'любой байт', 'last' => 'последний байт'] as $scenario => $label) {
@@ -347,7 +347,7 @@ class Runner
         for ($i = 0; $i < 128; $i++) {
             $inputs[] = DataSets::randomBytes(mt_rand(1, 64));
         }
-        $hash = new SimpleCryptoHash();
+        $hash = new SimpleHash();
         $expected = [];
         $checks = 0;
         $failed = 0;
@@ -368,7 +368,7 @@ class Runner
                 }
                 for ($repeat = 0; $repeat < 5; $repeat++) {
                     $check($hash->$method($input), $expected[$index][$method], 'Повтор ' . $index . ', ' . $method);
-                    $check((new SimpleCryptoHash())->$method($input), $expected[$index][$method], 'Новый экземпляр ' . $index . ', ' . $method);
+                    $check((new SimpleHash())->$method($input), $expected[$index][$method], 'Новый экземпляр ' . $index . ', ' . $method);
                 }
             }
         }
@@ -397,7 +397,7 @@ class Runner
             return false;
         }
 
-        $hash = new SimpleCryptoHash();
+        $hash = new SimpleHash();
         $vectors = require __DIR__ . '/vectors.php';
         $checks = 0;
         $formats = 0;

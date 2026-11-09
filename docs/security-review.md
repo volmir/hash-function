@@ -1,7 +1,7 @@
-# Краткая оценка криптостойкости SimpleCryptoHash
+# Краткая оценка криптостойкости SimpleHash
 
 Проверка выполнена 6 ноября 2026 года на текущей реализации
-[`src/SimpleCryptoHash.php`](../src/SimpleCryptoHash.php) в Docker с PHP 8.3 CLI.
+[`src/SimpleHash.php`](../src/SimpleHash.php) в Docker с PHP 8.3 CLI.
 Алгоритм и эталонные векторы не менялись. Это короткий анализ двух конкретных
 сценариев, без большого перебора и без повторения статистических уровней 3–6.
 
@@ -85,7 +85,7 @@ Example text: a76e8df2bfabc0aa6d319fbb55403207
 ```sh
 docker compose run --rm app php -r '
 require "autoload.php";
-$h = new Hash\SimpleCryptoHash();
+$h = new Hash\SimpleHash();
 $a = "Example text";
 $b = hex2bin("666f726765643aebcc043fd8");
 echo $h->get32bit($a), PHP_EOL, $h->get32bit($b), PHP_EOL;

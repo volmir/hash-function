@@ -3,7 +3,7 @@
 namespace Hash;
 
 // Учебный хеш по байтам; криптостойкость не предполагается.
-class SimpleCryptoHash
+class SimpleHash
 {
     // Эта константа нужна только неизменённому учебному антипримеру getStringSum().
     public const MIN_8_SYMBOL_HEX = 268435456;
