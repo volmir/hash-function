@@ -9,10 +9,12 @@ if ($argc > 2 || ($argc === 2 && !preg_match('/\A--step=([1-6])\z/', $argv[1], $
 
 $steps = $argc === 2 ? [(int) $matches[1]] : range(1, 6);
 $success = true;
+$step1 = new Security\Step1();
 try {
     foreach ($steps as $step) {
         $class = 'Security\\Step' . $step;
-        $result = (new $class())->run();
+        $instance = $step === 1 ? $step1 : ($step === 2 ? new $class($step1) : new $class());
+        $result = $instance->run();
         $success = $result && $success;
     }
 } catch (Throwable $error) {
