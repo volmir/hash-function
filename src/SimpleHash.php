@@ -30,7 +30,9 @@ class SimpleHash
             $state = $this->absorbByte($state, ord($str[$i]));
         }
 
-        return $this->toHex($this->finalize($state, $length));
+        $y = $state ^ ($length & self::MASK32);
+
+        return $this->toHex($this->feedForward($this->avalanche($y), $y));
     }
 
     // Смешиваем четыре состояния с разными началами перед их финализацией.
@@ -50,6 +52,15 @@ class SimpleHash
             $state4 = $this->absorbByte($state4, $byte);
         }
 
+        // Для обратной связи сохраняем состояния до перекрёстного смешивания.
+        // XOR с состояниями после смешивания позволил бы решать четыре дорожки
+        // независимо (около 4 * 2^32 переборов); исходные состояния связывают уравнения.
+        // Эта связь сама по себе не доказывает стойкость порядка 2^128.
+        $original1 = $state1;
+        $original2 = $state2;
+        $original3 = $state3;
+        $original4 = $state4;
+
         // Сложение связывает соседей через переносы; маска сохраняет арифметику mod 2^32.
         $state1 = ($state1 + $this->rotl32($state2, 7)) & self::MASK32;
         $state2 = ($state2 + $this->rotl32($state3, 11)) & self::MASK32;
@@ -62,10 +73,10 @@ class SimpleHash
         $state3 ^= $this->rotl32($state1, 7);
         $state4 ^= $this->rotl32($state2, 11);
 
-        return $this->toHex($this->finalize($state1, $length))
-            . $this->toHex($this->finalize($state2, $length))
-            . $this->toHex($this->finalize($state3, $length))
-            . $this->toHex($this->finalize($state4, $length));
+        return $this->toHex($this->feedForward($this->mixFinal($state1, $length), $original1))
+            . $this->toHex($this->feedForward($this->mixFinal($state2, $length), $original2))
+            . $this->toHex($this->feedForward($this->mixFinal($state3, $length), $original3))
+            . $this->toHex($this->feedForward($this->mixFinal($state4, $length), $original4));
     }
 
     // Задаём своё начальное значение для каждой 32-битной части.
@@ -104,10 +115,19 @@ class SimpleHash
         return $state;
     }
 
-    // Учитываем длину в байтах до финализатора, чтобы она влияла на весь выход.
-    private function finalize(int $state, int $length): int
+    // Учитываем длину в байтах и перемешиваем состояние без обратной связи.
+    private function mixFinal(int $state, int $length): int
     {
         return $this->avalanche($state ^ ($length & self::MASK32));
+    }
+
+    // Единственное место, где информация теряется намеренно: XOR возвращает
+    // в результат исходное состояние, поэтому «выход = f(x) ^ x» нельзя решить
+    // последовательным применением обратных операций к f.
+    // Делаем это один раз в конце: в каждом раунде обратная связь лишила бы его биективности.
+    private function feedForward(int $mixed, int $original): int
+    {
+        return $mixed ^ $original;
     }
 
     // Рассеиваем влияние каждого входного бита по всему 32-битному состоянию.
