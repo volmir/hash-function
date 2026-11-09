@@ -13,7 +13,7 @@ $step1 = new Security\Step1();
 try {
     foreach ($steps as $step) {
         $class = 'Security\\Step' . $step;
-        $instance = $step === 1 ? $step1 : ($step === 2 ? new $class($step1) : new $class());
+        $instance = $step === 1 ? $step1 : (in_array($step, [2, 4], true) ? new $class($step1) : new $class());
         $result = $instance->run();
         $success = $result && $success;
     }
