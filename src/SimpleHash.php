@@ -5,9 +5,6 @@ namespace Hash;
 // Учебный хеш по байтам; криптостойкость не предполагается.
 class SimpleHash
 {
-    // Эта константа нужна только неизменённому учебному антипримеру getStringSum().
-    public const MIN_8_SYMBOL_HEX = 268435456;
-
     private const MASK32 = 0xFFFFFFFF;
     private const ODD_PRIME = 0xA7D46BAD;
     private const ROTATION_BITS = 13;
@@ -134,31 +131,4 @@ class SimpleHash
         return sprintf('%08x', $state);
     }
 
-    /**
-     * Negative example: poor, simple, primitive function
-     * 
-     * Input: string
-     * Output: hash (32bit, string 8 symbols lenght [0-9][a-f])
-     */
-    public function getStringSum(string $str):string
-    {
-        $hash = 0;
-        
-        for ($i = 0; $i < strlen($str); $i++) {
-            $char = ord($str[$i]);
-            
-            // Hash transformations
-            $hash += $char;
-
-            // Convert to 32bit integer
-            $hash &= 0xFFFFFFFF;
-        }
-
-        if ($hash < self::MIN_8_SYMBOL_HEX) {
-            $hash = sprintf("%'" . (($hash % 3) + 1) . "*s", 10, $hash);
-        }
-        $hash = base_convert($hash, 10, 16);
-          
-        return $hash;
-    }
 }

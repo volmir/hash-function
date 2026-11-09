@@ -4,7 +4,7 @@ namespace Tests;
 
 use RuntimeException;
 
-// Общие измерения для нашей функции, антипримера и эталонов; готовых хешей здесь нет.
+// Общие измерения для нашей функции и эталонов; готовых хешей здесь нет.
 class Metrics
 {
     public const AVALANCHE_SAMPLES = 5000;
