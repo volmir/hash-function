@@ -5,6 +5,7 @@ spl_autoload_register(static function (string $class): void {
     $prefixes = [
         'Hash\\' => __DIR__ . '/src/',
         'Tests\\' => __DIR__ . '/tests/',
+        'Security\\' => __DIR__ . '/security/',
     ];
 
     foreach ($prefixes as $prefix => $directory) {
