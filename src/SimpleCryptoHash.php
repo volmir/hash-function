@@ -24,7 +24,7 @@ class SimpleCryptoHash
     ];
 
     // Обрабатываем каждый байт входа и возвращаем ровно восемь hex-цифр.
-    public function get(string $str): string
+    public function get32bit(string $str): string
     {
         $state = $this->initState();
         $length = strlen($str);

@@ -134,7 +134,7 @@ class Runner
     {
         $hash = new SimpleCryptoHash();
         return [
-            'SimpleCryptoHash32' => ['hash' => [$hash, 'get'], 'bits' => 32],
+            'SimpleCryptoHash32' => ['hash' => [$hash, 'get32bit'], 'bits' => 32],
             'SimpleCryptoHash128' => ['hash' => [$hash, 'get128bit'], 'bits' => 128],
         ];
     }
@@ -144,7 +144,7 @@ class Runner
     {
         $hash = new SimpleCryptoHash();
         $algorithms = [
-            'SimpleCryptoHash32' => [$hash, 'get'],
+            'SimpleCryptoHash32' => [$hash, 'get32bit'],
             'getStringSum' => [$hash, 'getStringSum'],
         ];
         $available = array_fill_keys(hash_algos(), true);
@@ -361,7 +361,7 @@ class Runner
             }
         };
         foreach ($inputs as $index => $input) {
-            foreach (['get' => 'hash32', 'get128bit' => 'hash128'] as $method => $key) {
+            foreach (['get32bit' => 'hash32', 'get128bit' => 'hash128'] as $method => $key) {
                 $expected[$index][$method] = $hash->$method($input);
                 if (isset($vectors[$index])) {
                     $check($expected[$index][$method], $vectors[$index][$key], 'Вектор ' . $index . ', ' . $method);
@@ -379,7 +379,7 @@ class Runner
         }
         foreach ([array_reverse(array_keys($inputs)), $order] as $indices) {
             foreach ($indices as $index) {
-                foreach (['get128bit', 'get'] as $method) {
+                foreach (['get128bit', 'get32bit'] as $method) {
                     $check($hash->$method($inputs[$index]), $expected[$index][$method], 'Порядок ' . $index . ', ' . $method);
                 }
             }
@@ -404,7 +404,7 @@ class Runner
         $matches = 0;
 
         foreach ($vectors as $vector) {
-            foreach (['get' => ['hash32', 8], 'get128bit' => ['hash128', 32]] as $method => [$key, $length]) {
+            foreach (['get32bit' => ['hash32', 8], 'get128bit' => ['hash128', 32]] as $method => [$key, $length]) {
                 $checks++;
                 try {
                     $actual = $hash->$method($vector['input']);
