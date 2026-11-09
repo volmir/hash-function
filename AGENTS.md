@@ -58,7 +58,7 @@ tests/check-cli.php        # проверки интерфейса hash.php
 autoload.php               # Hash\ → src/, Tests\ → tests/, Security\ → security/
 run.php                    # точка входа: Tests\Runner
 hash.php                   # CLI для вычисления хеша строки
-security.php, security/    # учебные проверки безопасности (шаги 1–5, Mirror, Inverse)
+security.php, security/    # учебные проверки безопасности (шаги 1–6, Mirror, Inverse)
 Dockerfile, docker-compose.yml, .dockerignore
 README.md                  # запуск, формулы, тесты, ограничения
 docs/security-review.md    # результаты практической проверки криптостойкости
@@ -79,6 +79,7 @@ docker compose run --rm app php security.php --step=2        # поиск кол
 docker compose run --rm app php security.php --step=3        # обратные операции и коллизия финала
 docker compose run --rm app php security.php --step=4        # поиск прообраза усечённого хеша
 docker compose run --rm app php security.php --step=5        # наивное продолжение токена
+docker compose run --rm app php security.php --step=6        # итоговая таблица
 ```
 
 Compose собирает сервис `app` и подключает каталог проекта в `/app`. Полный прогон обрабатывает миллионы входов и может занять несколько минут.
